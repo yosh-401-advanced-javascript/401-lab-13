@@ -13,11 +13,11 @@ const users = new mongoose.Schema({
 
 users.pre('save', function(next) {
   bcrypt.hash(this.password, 10)
-  .then(hashedPassword => {
-    this.password = hashedPassword;
-    next();
-  })
-  .catch(console.error);
+    .then(hashedPassword => {
+      this.password = hashedPassword;
+      next();
+    })
+    .catch(console.error);
 });
 
 users.statics.createFromOauth = function(email) {
@@ -25,17 +25,17 @@ users.statics.createFromOauth = function(email) {
   if(! email) { return Promise.reject('Validation Error'); }
 
   return this.findOne( {email} )
-  .then(user => {
-    if( !user ) { throw new Error('User Not Found'); }
-    console.log('Welcome Back', user.username);
-    return user;
-  })
-  .catch( error => {
-    console.log('Creating new user');
-    let username = email;
-    let password = 'none';
-    return this.create({username, password, email});
-  });
+    .then(user => {
+      if( !user ) { throw new Error('User Not Found'); }
+      console.log('Welcome Back', user.username);
+      return user;
+    })
+    .catch( error => {
+      console.log('Creating new user');
+      let username = email;
+      let password = 'none';
+      return this.create({username, password, email});
+    });
 
 };
 
@@ -48,24 +48,24 @@ users.statics.authenticateToken = function(token) {
   if(oneUseToken === true) {
     console.log('invalid token');
     return Promise.reject('invalid token stuff')
-    .then(process.env.EXPIRES === false);
+      .then(process.env.EXPIRES === false);
   }else if( oneUseToken === false ) {
     tokens[token ] = token;
     return this.findOne(query)
-        .then(process.env.EXPIRES === true);
+      .then(process.env.EXPIRES === true);
   }
 };
 
 users.statics.authenticateBasic = function(auth) {
   let query = {username:auth.username};
   return this.findOne(query)
-  .then( user => user && user.comparePassword(auth.password) )
-  .catch(error => {throw error;});
+    .then( user => user && user.comparePassword(auth.password) )
+    .catch(error => {throw error;});
 };
 
 users.methods.comparePassword = function(password) {
   return bcrypt.compare( password, this.password )
-  .then( valid => valid ? this : null);
+    .then( valid => valid ? this : null);
 };
 
 users.methods.generateToken = function() {
@@ -80,6 +80,6 @@ users.methods.generateToken = function() {
   } else {
     return jwt.sign(token, process.env.SECRET || 'secret', {expiresIn: 30});
   }
-}
+};
 
-  module.exports = mongoose.model('users', users);
+module.exports = mongoose.model('users', users);
